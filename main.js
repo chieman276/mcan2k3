@@ -1,0 +1,209 @@
+// Tạo biến canvas
+var canvas = document.getElementById("gamezone");
+var context = canvas.getContext('2d');
+var scoreshow = document.getElementById("score");
+var sound = document.getElementById("sound");
+// Khởi tạo 4 đối tượng
+var hinhnenchinh = new Image();
+var birdimg = new Image();
+var ongtren = new Image();
+var ongduoi = new Image();
+var quatrung = new Image();
+
+// Nạp các ảnh vào
+hinhnenchinh.src = "images/hds.jpg";
+birdimg.src = "images/bird.png";
+ongtren.src = "images/ongtren.png";
+ongduoi.src = "images/ongduoi.png";
+quatrung.src = "images/quatrung.png";
+
+// Khoảng cách hai ống
+var score = 0;
+var khoangcachhaiong = 200;
+var khoangcachdenongduoi;
+
+// Thiết lập vị trí của vật
+var bird = {
+    x: hinhnenchinh.width / 5,
+    y: hinhnenchinh.height / 2
+};
+
+// Tạo mảng chứa các ống
+var ong = [];
+ong[0] = {
+    x: canvas.width,
+    y: 0 // Khởi tạo ống đầu tiên nằm bên phải ngoài cùng và y=0;
+};
+
+// Biến để kiểm tra trạng thái của chú chim (lên, xuống, trái, phải)
+var isMovingUp = false;
+var isMovingDown = false;
+var isMovingLeft = false;
+var isMovingRight = false;
+
+// Biến để kiểm tra trạng thái của quả trứng
+var isEggFlying = false;
+var eggX = bird.x;
+var eggY = bird.y;
+
+// Sự kiện bắt phím xuống
+document.addEventListener("keydown", function (event) {
+    switch (event.keyCode) {
+        case 38: // Mũi tên lên
+            isMovingUp = true;
+            break;
+        case 40: // Mũi tên xuống
+            isMovingDown = true;
+            break;
+        case 37: // Mũi tên trái
+            isMovingLeft = true;
+            break;
+        case 39: // Mũi tên phải
+            isMovingRight = true;
+            break;
+    }
+});
+// Sự kiện bắt phím nhả ra
+document.addEventListener("keyup", function (event) {
+    switch (event.keyCode) {
+        case 38: // Mũi tên lên
+            isMovingUp = false;
+            break;
+        case 40: // Mũi tên xuống
+            isMovingDown = false;
+            break;
+        case 37: // Mũi tên trái
+            isMovingLeft = false;
+            break;
+        case 39: // Mũi tên phải
+            isMovingRight = false;
+            break;
+    }
+});
+
+// Sự kiện bắt phím xuống
+document.addEventListener("keydown", function (event) {
+    switch (event.keyCode) {
+        case 87: // Phím w
+            isMovingUp = true;
+            break;
+        case 83: // Phím s
+            isMovingDown = true;
+            break;
+        case 65: // Phím a
+            isMovingLeft = true;
+            break;
+        case 68: // Phím d
+            isMovingRight = true;
+            break;
+    }
+});
+
+// Sự kiện bắt phím nhả ra
+document.addEventListener("keyup", function (event) {
+    switch (event.keyCode) {
+        case 87: // Phím w
+            isMovingUp = false;
+            break;
+        case 83: // Phím s
+            isMovingDown = false;
+            break;
+        case 65: // Phím a
+            isMovingLeft = false;
+            break;
+        case 68: // Phím d
+            isMovingRight = false;
+            break;
+    }
+});
+
+// Sự kiện bắt click chuột
+canvas.addEventListener("click", function (event) {
+    if (!isEggFlying) {
+        // Phát âm thanh
+        sound.play();
+        isEggFlying = true;
+        eggX = bird.x;
+        eggY = bird.y;
+    }
+});
+// Function để chạy trò chơi
+function run() {
+    // Vẽ hình nền và vật (bird)
+    context.drawImage(hinhnenchinh, 0, 0);
+    context.drawImage(birdimg, bird.x, bird.y);
+
+    // Vẽ hai ống
+    for (var i = 0; i < ong.length; i++) {
+        khoangcachdenongduoi = ongtren.height + khoangcachhaiong;
+        context.drawImage(ongtren, ong[i].x, ong[i].y);
+        // Vẽ ống trên theo tọa độ của ống đó
+        // Ống dưới phụ thuộc ống trên
+        context.drawImage(ongduoi, ong[i].x, ong[i].y + khoangcachdenongduoi);
+        ong[i].x -= 5; // Để ống di chuyển
+
+        // Khi ống đến giữa màn hình
+        if (ong[i].x == canvas.width / 2) {
+            ong.push({
+                x: canvas.width,
+                y: Math.floor(Math.random() * ongtren.height) - ongtren.height // Làm cho ống xuất hiện ngẫu nhiên
+            });
+        }
+
+        if (ong[i].x == 0) ong.splice(0, 1); // Nếu ống đụng lề trái thì xóa nó đi để tránh mảng ống
+
+        if (ong[i].x == 180) {
+            score++;
+        }
+
+        // Điều kiện khi thua
+        if (bird.y < 0 || bird.y > 500 || // Khi chiều cao của vật chạm vào canvas sẽ thua
+            bird.x + birdimg.width >= ong[i].x && bird.x <= ong[i].x + ongtren.width &&
+            (bird.y <= ong[i].y + ongtren.height ||
+                bird.y + birdimg.height >= ong[i].y + khoangcachdenongduoi)
+        ) {
+            alert('lose');
+            location.reload();
+            return;
+        }
+    }
+
+    scoreshow.innerHTML = "score: " + score;
+
+    // Cho chú chim di chuyển lên khi biến isMovingUp là true
+    if (isMovingUp) {
+        bird.y -= 5;
+    }
+    // Cho chú chim di chuyển xuống khi biến isMovingDown là true
+    if (isMovingDown) {
+        bird.y += 5;
+    }
+    // Cho chú chim di chuyển sang trái khi biến isMovingLeft là true
+    if (isMovingLeft) {
+        bird.x -= 5;
+    }
+
+    // Cho chú chim di chuyển sang phải khi biến isMovingRight là true
+    if (isMovingRight) {
+        bird.x += 5;
+    }
+
+    // Nếu quả trứng đang bay
+    if (isEggFlying) {
+        eggX += 10; // Tăng tọa độ x của quả trứng để nó di chuyển sang phải
+
+        // Nếu quả trứng ra khỏi màn hình, đặt lại trạng thái cho quả trứng
+        if (eggX > canvas.width) {
+            isEggFlying = false;
+        }
+    }
+
+    // Vẽ quả trứng nếu đang bay
+    if (isEggFlying) {
+        context.drawImage(quatrung, eggX, eggY);
+    }
+
+    requestAnimationFrame(run);
+}
+
+run();
