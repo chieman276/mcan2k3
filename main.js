@@ -9,6 +9,8 @@ var birdimg = new Image();
 var ongtren = new Image();
 var ongduoi = new Image();
 var quatrung = new Image();
+var sugia = new Image();
+
 
 // Nạp các ảnh vào
 hinhnenchinh.src = "images/hds.jpg";
@@ -16,10 +18,11 @@ birdimg.src = "images/bird.png";
 ongtren.src = "images/ongtren.png";
 ongduoi.src = "images/ongduoi.png";
 quatrung.src = "images/quatrung.png";
+sugia.src = "images/sugia.png";
 
 // Khoảng cách hai ống
 var score = 0;
-var khoangcachhaiong = 200;
+var khoangcachhaiong = 300;
 var khoangcachdenongduoi;
 
 // Thiết lập vị trí của vật
@@ -34,6 +37,36 @@ ong[0] = {
     x: canvas.width,
     y: 0 // Khởi tạo ống đầu tiên nằm bên phải ngoài cùng và y=0;
 };
+
+// Mảng chứa các sứ giả
+var sugias = [];
+
+var sugiaLoaded = false;
+
+// Nạp hình ảnh và xử lý sự kiện sau khi hình ảnh đã được tải xong
+sugia.onload = function() {
+    sugiaLoaded = true;
+};
+
+// Hàm tạo sứ giả mới và thêm vào mảng sugias
+function taoSugia() {
+    if (sugiaLoaded) {
+        var minY = canvas.height / 2 - 250; // Giới hạn y tối thiểu
+        var maxY = canvas.height / 2 + 250; // Giới hạn y tối đa
+
+        var sugiaObj = {
+            x: canvas.width,
+            y: Math.random() * (maxY - minY) + minY
+        };
+        sugias.push(sugiaObj);
+    }
+}
+
+// Hàm gọi tạo sứ giả sau mỗi khoảng thời gian
+function taoSugiaDinhKy() {
+    taoSugia(); // Gọi hàm tạo sứ giả
+    setTimeout(taoSugiaDinhKy, 1000); // Gọi lại hàm tạo sứ giả sau mỗi 5 giây
+}
 
 // Biến để kiểm tra trạng thái của chú chim (lên, xuống, trái, phải)
 var isMovingUp = false;
@@ -117,6 +150,22 @@ document.addEventListener("keyup", function (event) {
     }
 });
 
+
+// Sự kiện bắt phím xuống
+document.addEventListener("keydown", function (event) {
+    switch (event.keyCode) {
+        case 32: // Phím Space
+            if (!isEggFlying) {
+                // Phát âm thanh
+                sound.play();
+                isEggFlying = true;
+                eggX = bird.x;
+                eggY = bird.y;
+            }
+            break;
+    }
+});
+
 // Sự kiện bắt click chuột
 canvas.addEventListener("click", function (event) {
     if (!isEggFlying) {
@@ -127,6 +176,44 @@ canvas.addEventListener("click", function (event) {
         eggY = bird.y;
     }
 });
+
+    // Hàm để vẽ các sứ giả
+    function veSugias() {
+        for (var i = 0; i < sugias.length; i++) {
+            var sugiaObj = sugias[i];
+            context.drawImage(sugia, sugiaObj.x, sugiaObj.y);
+            sugiaObj.x -= 5; // Để sứ giả di chuyển sang trái
+
+            // Kiểm tra va chạm với quả trứng
+            if (
+                eggX + quatrung.width >= sugiaObj.x &&
+                eggX <= sugiaObj.x + sugia.width &&
+                eggY + quatrung.height >= sugiaObj.y &&
+                eggY <= sugiaObj.y + sugia.height
+            ) {
+                // Xóa sứ giả và đặt lại trạng thái cho quả trứng
+                score++;
+                score++;
+                score++;
+                score++;
+                score++;
+                sugias.splice(i, 1);
+                isEggFlying = false;
+                i--;
+                continue;
+            }
+
+
+
+            // Nếu sứ giả ra khỏi màn hình, xóa sứ giả khỏi mảng
+            if (sugiaObj.x + sugia.width < 0) {
+                sugias.splice(i, 1);
+                i--;
+            }
+        }
+    }
+
+
 // Function để chạy trò chơi
 function run() {
     // Vẽ hình nền và vật (bird)
@@ -167,7 +254,6 @@ function run() {
             return;
         }
     }
-
     scoreshow.innerHTML = "score: " + score;
 
     // Cho chú chim di chuyển lên khi biến isMovingUp là true
@@ -203,7 +289,11 @@ function run() {
         context.drawImage(quatrung, eggX, eggY);
     }
 
+    veSugias();
+
     requestAnimationFrame(run);
 }
+// Gọi hàm tạo sứ giả định kỳ
+taoSugiaDinhKy();
 
 run();
