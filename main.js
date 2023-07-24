@@ -10,6 +10,7 @@ var ongtren = new Image();
 var ongduoi = new Image();
 var quatrung = new Image();
 var sugia = new Image();
+var lose = new Image();
 
 
 // Nạp các ảnh vào
@@ -19,6 +20,7 @@ ongtren.src = "images/ongtren.png";
 ongduoi.src = "images/ongduoi.png";
 quatrung.src = "images/quatrung.png";
 sugia.src = "images/sugia.png";
+lose.src = "images/lose.jpg";
 
 // Khoảng cách hai ống
 var score = 0;
@@ -44,7 +46,7 @@ var sugias = [];
 var sugiaLoaded = false;
 
 // Nạp hình ảnh và xử lý sự kiện sau khi hình ảnh đã được tải xong
-sugia.onload = function() {
+sugia.onload = function () {
     sugiaLoaded = true;
 };
 
@@ -83,92 +85,49 @@ var eggY = bird.y;
 document.addEventListener("keydown", function (event) {
     switch (event.keyCode) {
         case 38: // Mũi tên lên
+        case 87: // Phím w
             isMovingUp = true;
             break;
         case 40: // Mũi tên xuống
+        case 83: // Phím s
             isMovingDown = true;
             break;
         case 37: // Mũi tên trái
+        case 65: // Phím a
             isMovingLeft = true;
             break;
         case 39: // Mũi tên phải
+        case 68: // Phím d
             isMovingRight = true;
             break;
     }
 });
+
 // Sự kiện bắt phím nhả ra
 document.addEventListener("keyup", function (event) {
     switch (event.keyCode) {
         case 38: // Mũi tên lên
+        case 87: // Phím w
             isMovingUp = false;
             break;
         case 40: // Mũi tên xuống
+        case 83: // Phím s
             isMovingDown = false;
             break;
         case 37: // Mũi tên trái
+        case 65: // Phím a
             isMovingLeft = false;
             break;
         case 39: // Mũi tên phải
-            isMovingRight = false;
-            break;
-    }
-});
-
-// Sự kiện bắt phím xuống
-document.addEventListener("keydown", function (event) {
-    switch (event.keyCode) {
-        case 87: // Phím w
-            isMovingUp = true;
-            break;
-        case 83: // Phím s
-            isMovingDown = true;
-            break;
-        case 65: // Phím a
-            isMovingLeft = true;
-            break;
-        case 68: // Phím d
-            isMovingRight = true;
-            break;
-    }
-});
-
-// Sự kiện bắt phím nhả ra
-document.addEventListener("keyup", function (event) {
-    switch (event.keyCode) {
-        case 87: // Phím w
-            isMovingUp = false;
-            break;
-        case 83: // Phím s
-            isMovingDown = false;
-            break;
-        case 65: // Phím a
-            isMovingLeft = false;
-            break;
         case 68: // Phím d
             isMovingRight = false;
             break;
     }
 });
 
-
-// Sự kiện bắt phím xuống
+// Sự kiện bắt phím xuống hoặc click chuột
 document.addEventListener("keydown", function (event) {
-    switch (event.keyCode) {
-        case 32: // Phím Space
-            if (!isEggFlying) {
-                // Phát âm thanh
-                sound.play();
-                isEggFlying = true;
-                eggX = bird.x;
-                eggY = bird.y;
-            }
-            break;
-    }
-});
-
-// Sự kiện bắt click chuột
-canvas.addEventListener("click", function (event) {
-    if (!isEggFlying) {
+    if (!isEggFlying && (event.keyCode === 32 || event.type === "click")) {
         // Phát âm thanh
         sound.play();
         isEggFlying = true;
@@ -177,42 +136,39 @@ canvas.addEventListener("click", function (event) {
     }
 });
 
-    // Hàm để vẽ các sứ giả
-    function veSugias() {
-        for (var i = 0; i < sugias.length; i++) {
-            var sugiaObj = sugias[i];
-            context.drawImage(sugia, sugiaObj.x, sugiaObj.y);
-            sugiaObj.x -= 5; // Để sứ giả di chuyển sang trái
+// Hàm để vẽ các sứ giả
+function veSugias() {
+    for (var i = 0; i < sugias.length; i++) {
+        var sugiaObj = sugias[i];
+        context.drawImage(sugia, sugiaObj.x, sugiaObj.y);
+        sugiaObj.x -= 5; // Để sứ giả di chuyển sang trái
 
-            // Kiểm tra va chạm với quả trứng
-            if (
-                eggX + quatrung.width >= sugiaObj.x &&
-                eggX <= sugiaObj.x + sugia.width &&
-                eggY + quatrung.height >= sugiaObj.y &&
-                eggY <= sugiaObj.y + sugia.height
-            ) {
-                // Xóa sứ giả và đặt lại trạng thái cho quả trứng
-                score++;
-                score++;
-                score++;
-                score++;
-                score++;
-                sugias.splice(i, 1);
-                isEggFlying = false;
-                i--;
-                continue;
-            }
+        // Kiểm tra va chạm với quả trứng
+        if (
+            eggX + quatrung.width >= sugiaObj.x &&
+            eggX <= sugiaObj.x + sugia.width &&
+            eggY + quatrung.height >= sugiaObj.y &&
+            eggY <= sugiaObj.y + sugia.height
+        ) {
+            // Xóa sứ giả và đặt lại trạng thái cho quả trứng
+            score++;
+            score++;
+            score++;
+            score++;
+            score++;
+            sugias.splice(i, 1);
+            isEggFlying = false;
+            i--;
+            continue;
+        }
 
-
-
-            // Nếu sứ giả ra khỏi màn hình, xóa sứ giả khỏi mảng
-            if (sugiaObj.x + sugia.width < 0) {
-                sugias.splice(i, 1);
-                i--;
-            }
+        // Nếu sứ giả ra khỏi màn hình, xóa sứ giả khỏi mảng
+        if (sugiaObj.x + sugia.width < 0) {
+            sugias.splice(i, 1);
+            i--;
         }
     }
-
+}
 
 // Function để chạy trò chơi
 function run() {
@@ -244,17 +200,45 @@ function run() {
         }
 
         // Điều kiện khi thua
-        if (bird.y < 0 || bird.y > 500 || // Khi chiều cao của vật chạm vào canvas sẽ thua
+        if (bird.y < 0 || bird.y > canvas.height ||
             bird.x + birdimg.width >= ong[i].x && bird.x <= ong[i].x + ongtren.width &&
             (bird.y <= ong[i].y + ongtren.height ||
                 bird.y + birdimg.height >= ong[i].y + khoangcachdenongduoi)
         ) {
-            alert('lose');
-            location.reload();
+            // Thua - xuất hiện hình "lose" xoay 720 độ ở giữa màn hình
+            var rotateAngle = 0;
+            var rotateInterval = setInterval(function () {
+                rotateAngle += 10;
+                if (rotateAngle >= 720) {
+                    clearInterval(rotateInterval);
+                    context.drawImage(lose, canvas.width / 2 - lose.width / 2, canvas.height / 2 - lose.height / 2);
+
+                    // Hiển thị số điểm
+                    var text = "Số điểm mà bạn đạt được: " + score;
+                    context.font = "24px Arial";
+                    context.fillStyle = "#ffffff";
+                    context.fillText(text, canvas.width / 2 - context.measureText(text).width / 2, canvas.height / 2 - 50);
+
+                    // Click vào hình "lose" để bắt đầu lại game
+                    canvas.addEventListener("click", function () {
+                        location.reload();
+                    });
+                } else {
+                    context.clearRect(0, 0, canvas.width, canvas.height);
+                    context.save();
+                    context.translate(canvas.width / 2, canvas.height / 2);
+                    context.rotate(rotateAngle * Math.PI / 180);
+                    context.drawImage(lose, -lose.width / 2, -lose.height / 2);
+                    context.restore();
+                }
+            }, 50);
+
             return;
         }
+
     }
-    scoreshow.innerHTML = "score: " + score;
+
+    scoreshow.innerHTML = "Điểm: " + score;
 
     // Cho chú chim di chuyển lên khi biến isMovingUp là true
     if (isMovingUp) {
@@ -293,7 +277,9 @@ function run() {
 
     requestAnimationFrame(run);
 }
+
 // Gọi hàm tạo sứ giả định kỳ
 taoSugiaDinhKy();
 
+// Chạy game
 run();
